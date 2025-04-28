@@ -1,7 +1,7 @@
-Item = require("utils.objects.item")
+Placeable = require("utils.objects.placeable")
 
 local placeables = {
-    ["Saw"] = Item:new(1, "Saw", "A tool for cutting materials.", "assets/items/objects/iron_ingot.png")
+    ["Saw"] = Placeable:new(1, "Saw", "Machines", "A tool for cutting materials.", -1, -1, "left", 1, 1, "assets/items/placeables/saw.png", "assets/items/placeables/saw.png", 0.07),
 }
 
 function placeables.getPlaceables()
