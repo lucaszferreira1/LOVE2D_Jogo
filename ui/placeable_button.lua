@@ -11,9 +11,12 @@ function PlaceableButton:new(x, y, width, height, placeable)
 end
 
 function PlaceableButton:draw()
-    local twentyPWidth = self.width * 0.2
-    love.graphics.setColor(0.2, 0.2, 0.2)
-    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+    if not self.isHovered then
+        love.graphics.setColor(0.2, 0.2, 0.2)
+    else
+        love.graphics.setColor(0.3, 0.3, 0.3)
+    end
+    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height, 10, 10)
 
     if self.placeable.icon then
         local iconX = self.x + self.width / 4
@@ -25,18 +28,20 @@ function PlaceableButton:draw()
     local textX = self.x + (self.width / 2)
     local textY = self.y + self.height / 1.5
     love.graphics.printf(self.placeable.name, textX - self.width / 2, textY, self.width, "center")
+end
 
+function PlaceableButton:drawDescriptionHover()
     if self.isHovered then
         local descriptionWidth = self.width * 4
         local descriptionHeight = self.height
-        local descriptionX = self.x + self.width + twentyPWidth
+        local descriptionX = self.x + self.width + self.width * 0.2
         local descriptionY = self.y
 
         love.graphics.setColor(0.9, 0.9, 0.9)
         love.graphics.rectangle("fill", descriptionX, descriptionY, descriptionWidth, descriptionHeight, 10, 10)
 
         love.graphics.setColor(0, 0, 0)
-        love.graphics.printf(self.placeable.description, descriptionX + 5, descriptionY + 5, descriptionWidth - twentyPWidth, "left")
+        love.graphics.printf(self.placeable.description, descriptionX + self.width * 0.1, descriptionY + self.height * 0.1, descriptionWidth - self.width * 0.2, "left")
     end
 end
 

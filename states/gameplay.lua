@@ -6,7 +6,7 @@ function Gameplay:enter(level_id)
     self.level = level_id
     local levels = require("utils.lists.levels")
     self.level_data = levels.getLevel(level_id)
-    self.size = 25
+    self.size = 30
     self.screenWidth = love.graphics.getWidth()
     self.screenHeight = love.graphics.getHeight()
 
@@ -32,13 +32,14 @@ function Gameplay:draw()
     self:drawGrid()
     love.graphics.printf("Playing Level " .. tostring(self.level), 0, 50, love.graphics.getWidth(), "center")
     love.graphics.printf("[B] Return to Level Selection", 0, 550, love.graphics.getWidth(), "center")
+    self:drawDescriptions()
 end
 
 function Gameplay:drawPlaceables()
     local placeables = self.level_data:getPlaceables()
     local gridHeight = self.size * self.level_data.height
-    local padding = 10
-    local columns = 2
+    local padding = self.size * 0.4
+    local columns = 3
     local buttonWidth = self.size * 2
     local buttonHeight = self.size * 2
     local totalHeight = math.ceil(#self.placeableButtons / columns) * (buttonHeight + padding) - padding
@@ -58,8 +59,6 @@ function Gameplay:drawPlaceables()
     end
 end
 
-
-
 function Gameplay:drawGrid()
     local gridWidth = self.size * self.level_data.width
     local gridHeight = self.size * self.level_data.height
@@ -68,9 +67,7 @@ function Gameplay:drawGrid()
 
     love.graphics.setColor(1, 1, 1, 0.5)
     for i = 0, self.level_data.width do
-        -- Draw vertical lines
         love.graphics.line(startX + i * self.size, startY, startX + i * self.size, startY + gridHeight)
-        -- Draw horizontal lines
         love.graphics.line(startX, startY + i * self.size, startX + gridWidth, startY + i * self.size)
     end
 
@@ -88,6 +85,12 @@ function Gameplay:drawGrid()
     end
 
     love.graphics.setColor(1, 1, 1, 1)
+end
+
+function Gameplay:drawDescriptions()
+    for _, button in ipairs(self.placeableButtons) do
+        button:drawDescriptionHover()
+    end
 end
 
 function Gameplay:keypressed(key)

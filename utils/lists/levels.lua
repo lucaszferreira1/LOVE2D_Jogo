@@ -9,6 +9,8 @@ local level1 = Level:new(1, 10, 10, "First level description")
 level1:addItemIn(items.getItemByName("Iron Ingot"), {x = 0, y = 0}, 10)
 level1:addItemOut(items.getItemByName("Iron Ingot"), {x = 9, y = 9}, 10)
 level1:addPlaceable(placeables.getPlaceableByName("Saw"))
+level1:addPlaceable(placeables.getPlaceableByName("Saw"))
+level1:addPlaceable(placeables.getPlaceableByName("Saw"))
 table.insert(levels, level1)
 
 local levelMethods = {}
