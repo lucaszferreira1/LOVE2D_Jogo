@@ -2,10 +2,8 @@ local Level = {}
 Level.__index = Level
 
 function Level:new(id, width, height, description)
-    local Grid = require("utils.grid")
     local instance = {
         id = id or 0,
-        grid = Grid:new(width, height),
         width = width or 0,
         height = height or 0,
         description = description or "",

@@ -1,7 +1,7 @@
 Item = require("utils.objects.item")
 
 local items = {
-    ["Iron Ingot"] = Item:new(1, "Iron Ingot", "Metal", "A basic crafting material.", "assets/items/objects/iron_ingot.png", 0.08)
+    ["Iron Ingot"] = Item:new(1, "Iron Ingot", "Metal", "A basic crafting material.", "assets/items/objects/iron_ingot.png", 0.085)
 }
 
 function items.getItems()
