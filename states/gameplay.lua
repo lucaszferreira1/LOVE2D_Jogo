@@ -113,8 +113,8 @@ function Gameplay:drawGrid()
                 local drawX = self.gridStartX + (x-1) * self.size
                 local drawY = self.gridStartY + (y-1) * self.size
                 love.graphics.setColor(1, 1, 1, 1)
-                if placeable.drawIcon then
-                    placeable:drawIcon(drawX, drawY)
+                if placeable.icon then
+                    placeable:drawSprite(drawX, drawY)
                 end
             end
         end
@@ -148,6 +148,30 @@ function Gameplay:drawDraggingPreview()
     if self.dragging.placeable.drawIcon then
         self.dragging.placeable:drawIcon(drawX, drawY)
     end
+    
+    -- draw an arrow indicating the direction the placeable is pointing
+    if self.dragging.placeable.direction then
+        local arrowSize = self.size * 0.5
+        local centerX = drawX + self.size / 2
+        local centerY = drawY + self.size / 2
+        local dx, dy = 0, 0
+
+        if self.dragging.placeable.direction == "up" then
+            dx, dy = 0, -arrowSize
+        elseif self.dragging.placeable.direction == "down" then
+            dx, dy = 0, arrowSize
+        elseif self.dragging.placeable.direction == "left" then
+            dx, dy = -arrowSize, 0
+        elseif self.dragging.placeable.direction == "right" then
+            dx, dy = arrowSize, 0
+        end
+        if not self.dragging.placeable.direction == "none" then
+            love.graphics.setColor(1, 0, 0, 1)
+            love.graphics.line(centerX, centerY, centerX + dx, centerY + dy)
+            love.graphics.circle("fill", centerX + dx, centerY + dy, arrowSize * 0.2)
+        end
+    end
+
     love.graphics.setColor(1, 1, 1, 1)
 end
 
@@ -155,28 +179,25 @@ end
 function Gameplay:mousepressed(x, y, button)
     if button == 1 then
         -- check buttons
-        if not self.dragging then
-            for _, btn in ipairs(self.placeableButtons) do
-                if btn:isHoveredAt(x, y) then
-                    -- start dragging
-                    self.dragging = { placeable = btn.placeable, x = x, y = y }
-                    return
-                end
+        for _, btn in ipairs(self.placeableButtons) do
+            if btn:isHoveredAt(x, y) then
+                -- start dragging
+                self.dragging = { placeable = btn.placeable, x = x, y = y }
+                return
             end
-        else
-            local col0 = math.floor((x - self.gridStartX) / self.size)
-            local row0 = math.floor((y - self.gridStartY) / self.size)
-            -- clamp to valid
-            local cx = math.max(0, math.min(col0, self.level_data.width - 1))
-            local cy = math.max(0, math.min(row0, self.level_data.height - 1))
-            -- add to grid (Lua grids are 1-based)
-            self.grid:addPlaceable(cx+1, cy+1, self.dragging.placeable)
-
-            -- stop dragging
-            self.dragging = nil
         end
-    end
-    if button == 2 then
+
+        local col0 = math.floor((x - self.gridStartX) / self.size)
+        local row0 = math.floor((y - self.gridStartY) / self.size)
+        -- clamp to valid
+        local cx = math.max(0, math.min(col0, self.level_data.width - 1))
+        local cy = math.max(0, math.min(row0, self.level_data.height - 1))
+        -- add to grid (Lua grids are 1-based)
+        self.grid:addPlaceable(cx+1, cy+1, self.dragging.placeable)
+
+        -- stop dragging
+        self.dragging = nil
+    elseif button == 2 then
         if self.dragging then
             local col0 = math.floor((x - self.gridStartX) / self.size)
             local row0 = math.floor((y - self.gridStartY) / self.size)
@@ -194,6 +215,10 @@ function Gameplay:keypressed(key)
     if key == "b" then
         local LevelSelect = require("states.level_select")
         StateManager:switch(LevelSelect)
+    elseif key == "r" then
+        if self.dragging then 
+            self.dragging.placeable:rotate()
+        end
     end
 end
 

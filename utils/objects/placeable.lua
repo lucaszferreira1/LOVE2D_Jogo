@@ -10,7 +10,7 @@ function Placeable:new(id, name, category, description, x, y, direction, width, 
     instance.description = description or "No description available."
     instance.x = x or -1
     instance.y = y or -1
-    instance.direction = direction or "left"
+    instance.direction = direction or "none"
     instance.width = width or 1
     instance.height = height or 1
     instance.icon = love.graphics.newImage(iconPath or "default_icon.png")
@@ -115,6 +115,18 @@ function Placeable:setScale(scale)
     self.scale = scale
 end
 
+function Placeable:rotate()
+    if self.direction == "up" then
+        self.direction = "right"
+    elseif self.direction == "right" then
+        self.direction = "down"
+    elseif self.direction == "down" then
+        self.direction = "left"
+    elseif self.direction == "left" then
+        self.direction = "up"
+    end
+end
+
 function Placeable:drawIcon(x, y)
     x = x or self.x
     y = y or self.y
@@ -124,12 +136,11 @@ function Placeable:drawIcon(x, y)
     end
 end
 
-
-function Placeable:drawSprite()
+function Placeable:drawSprite(x, y)
     if self.sprite then
-        love.graphics.draw(self.sprite, self.x, self.y, math.rad(self.direction), self.width, self.height)
+        love.graphics.draw(self.sprite, x, y, 0, self.scale, self.scale)
     else
-        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+        love.graphics.rectangle("line", x, y, self.width, self.height)
     end
 end
 
