@@ -14,7 +14,20 @@ function Gameplay:enter(level_id)
     local Grid = require("utils.grid")
     self.grid = Grid:new(self.level_data.width, self.level_data.height, self.level_data.itemsIn, self.level_data.itemsOut)
 
-    -- setup buttons
+    local Button = require("ui.button")
+    local Fade = require("ui.fade")
+    self.electricalButton = Button:new("Electrical", 1, 1, 1, 1, function()
+        Fade:start(0.5, function()
+            local Electrical_Gameplay = require("states.electrical_gameplay")
+            StateManager:switchToElectrical(Electrical_Gameplay, self.level_id, self.level_data, self.grid)
+        end)
+    end, {
+        color = {0.5, 0.5, 0.5},
+        hoverColor = {0.4, 0.6, 0.8},
+        textColor = {1, 1, 1}
+    })
+
+
     self.placeableButtons = {}
     for _, placeable in ipairs(self.level_data.placeables) do
         local PlaceableButton = require("ui.placeable_button")
@@ -22,19 +35,18 @@ function Gameplay:enter(level_id)
         table.insert(self.placeableButtons, button)
     end
 
-    -- dragging state
     self.dragging = nil  -- { placeable, x, y }
 end
 
 function Gameplay:update(dt)
     local mx, my = love.mouse.getPosition()
 
-    -- update hover state of buttons
+    self.electricalButton:update(dt)
+
     for _, button in ipairs(self.placeableButtons) do
         button:update(mx, my)
     end
 
-    -- update dragging position
     if self.dragging then
         self.dragging.x = mx
         self.dragging.y = my
@@ -68,7 +80,29 @@ function Gameplay:drawPlaceables()
     local startX = self.size * 0.66
     local startY = (self.screenHeight - totalHeight) / 2
 
+    -- Draw the box containing the placeable buttons
+    local boxWidth = columns * (buttonWidth + padding) - padding
+    local boxHeight = totalHeight + buttonHeight + padding * 2
+    love.graphics.setColor(0.2, 0.2, 0.2, 0.8)
+    love.graphics.rectangle("fill", startX - padding, startY - padding, boxWidth + padding * 2, boxHeight)
     love.graphics.setColor(1, 1, 1, 1)
+
+    -- Adjust button dimensions to be half the width of the box
+    local topButtonWidth = (boxWidth + padding * 2) / 2 - padding
+
+    -- Draw the "Mechanical" fake button
+    local mechanicalButtonX = startX - padding
+    local mechanicalButtonY = startY - padding - buttonHeight - padding
+    love.graphics.setColor(0.5, 0.5, 0.9, 1)
+    love.graphics.rectangle("fill", mechanicalButtonX, mechanicalButtonY, topButtonWidth, buttonHeight, 10, 10)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.printf("Mechanical", mechanicalButtonX, mechanicalButtonY + (buttonHeight - love.graphics.getFont():getHeight()) / 2, topButtonWidth, "center")
+
+    local electricalButtonX = mechanicalButtonX + topButtonWidth + padding * 2
+    self.electricalButton:setXYWH(electricalButtonX, mechanicalButtonY, topButtonWidth, buttonHeight)
+    self.electricalButton:draw()
+
+    -- Draw the placeable buttons
     for i, button in ipairs(self.placeableButtons) do
         local col = (i - 1) % columns
         local row = math.floor((i - 1) / columns)
@@ -105,7 +139,7 @@ function Gameplay:drawGrid()
         item.item:draw(self.gridStartX + (item.position.x - 1) * self.size, self.gridStartY + (item.position.y - 1) * self.size)
     end
 
-    -- draw already placed items from grid
+    -- draw placed items from grid
     for x = 1, self.level_data.width do
         for y = 1, self.level_data.height do
             local placeable = self.grid:getPlaceable(x, y)
@@ -129,22 +163,17 @@ function Gameplay:drawDescriptions()
     end
 end
 
--- new: draw preview of dragging placeable, snapped to grid
 function Gameplay:drawDraggingPreview()
     local mx, my = self.dragging.x, self.dragging.y
-    -- calculate grid cell
     local col = math.floor((mx - self.gridStartX) / self.size)
     local row = math.floor((my - self.gridStartY) / self.size)
-    -- snap back into bounds
     col = math.max(0, math.min(col, self.level_data.width - 1))
     row = math.max(0, math.min(row, self.level_data.height - 1))
     local drawX = self.gridStartX + col * self.size
     local drawY = self.gridStartY + row * self.size
 
     love.graphics.setColor(1, 1, 1, 0.7)
-    -- draw a rectangle background
     love.graphics.rectangle("fill", drawX, drawY, self.size, self.size)
-    -- draw the actual icon if available
     if self.dragging.placeable.drawIcon then
         self.dragging.placeable:drawIcon(drawX, drawY)
     end
@@ -175,36 +204,37 @@ function Gameplay:drawDraggingPreview()
     love.graphics.setColor(1, 1, 1, 1)
 end
 
--- new: pick up on mouse press
+
 function Gameplay:mousepressed(x, y, button)
     if button == 1 then
-        -- check buttons
+        if self.electricalButton:isHovered(x, y) then
+            self.electricalButton:mousepressed(x, y, button)
+            return
+        end
+
         for _, btn in ipairs(self.placeableButtons) do
             if btn:isHoveredAt(x, y) then
-                -- start dragging
                 self.dragging = { placeable = btn.placeable, x = x, y = y }
                 return
             end
         end
+        
+        if self.dragging then
+            local col0 = math.floor((x - self.gridStartX) / self.size)
+            local row0 = math.floor((y - self.gridStartY) / self.size)
+            local cx = math.max(0, math.min(col0, self.level_data.width - 1))
+            local cy = math.max(0, math.min(row0, self.level_data.height - 1))
+            self.grid:addPlaceable(cx+1, cy+1, self.dragging.placeable)
 
-        local col0 = math.floor((x - self.gridStartX) / self.size)
-        local row0 = math.floor((y - self.gridStartY) / self.size)
-        -- clamp to valid
-        local cx = math.max(0, math.min(col0, self.level_data.width - 1))
-        local cy = math.max(0, math.min(row0, self.level_data.height - 1))
-        -- add to grid (Lua grids are 1-based)
-        self.grid:addPlaceable(cx+1, cy+1, self.dragging.placeable)
-
-        -- stop dragging
-        self.dragging = nil
+            self.dragging = nil
+        end
+        
     elseif button == 2 then
         if self.dragging then
             local col0 = math.floor((x - self.gridStartX) / self.size)
             local row0 = math.floor((y - self.gridStartY) / self.size)
-            -- clamp to valid
             local cx = math.max(0, math.min(col0, self.level_data.width - 1))
             local cy = math.max(0, math.min(row0, self.level_data.height - 1))
-            -- add to grid (Lua grids are 1-based)
             self.grid:addPlaceable(cx+1, cy+1, self.dragging.placeable)
         end
     end

@@ -14,13 +14,11 @@ function PlaceableButton:new(x, y, width, height, placeable)
 end
 
 function PlaceableButton:update(mx, my)
-    self.isHovered = mx >= self.x and mx <= self.x + self.width
-                      and my >= self.y and my <= self.y + self.height
+    self.isHovered = mx >= self.x and mx <= self.x + self.width and my >= self.y and my <= self.y + self.height
 end
 
 function PlaceableButton:isHoveredAt(px, py)
-    return px >= self.x and px <= self.x + self.width
-       and py >= self.y and py <= self.y + self.height
+    return px >= self.x and px <= self.x + self.width and py >= self.y and py <= self.y + self.height
 end
 
 function PlaceableButton:draw()

@@ -24,9 +24,15 @@ function Button:new(text, x, y, width, height, onClick, options)
     return self
 end
 
+function Button:setXYWH(x, y, width, height)
+    self.x = x
+    self.y = y
+    self.width = width
+    self.height = height
+end
+
 function Button:isHovered(mx, my)
-    return mx >= self.x and mx <= self.x + self.width and
-           my >= self.y and my <= self.y + self.height
+    return mx >= self.x and mx <= self.x + self.width and my >= self.y and my <= self.y + self.height
 end
 
 function Button:draw()
