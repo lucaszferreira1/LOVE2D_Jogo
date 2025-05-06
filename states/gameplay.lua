@@ -3,23 +3,31 @@ local StateManager = require("utils.state_manager")
 
 local Gameplay = {}
 
-function Gameplay:enter(level_id)
+function Gameplay:enter(level_id, level_data, grid)
     self.level = level_id
     local levels = require("utils.lists.levels")
-    self.level_data = levels.getLevel(level_id)
+    if level_data then
+        self.level_data = level_data
+    else
+        self.level_data = levels.getLevel(level_id)
+    end
     self.size = 30
     self.screenWidth = love.graphics.getWidth()
     self.screenHeight = love.graphics.getHeight()
 
-    local Grid = require("utils.grid")
-    self.grid = Grid:new(self.level_data.width, self.level_data.height, self.level_data.itemsIn, self.level_data.itemsOut)
-
+    if grid then
+        self.grid = grid
+    else
+        local Grid = require("utils.grid")
+        self.grid = Grid:new(self.level_data.width, self.level_data.height, self.level_data.itemsIn, self.level_data.itemsOut)
+    end
+    
     local Button = require("ui.button")
     local Fade = require("ui.fade")
     self.electricalButton = Button:new("Electrical", 1, 1, 1, 1, function()
         Fade:start(0.5, function()
             local Electrical_Gameplay = require("states.electrical_gameplay")
-            StateManager:switchToElectrical(Electrical_Gameplay, self.level_id, self.level_data, self.grid)
+            StateManager:switchElectrical(Electrical_Gameplay, self.level, self.level_data, self.grid)
         end)
     end, {
         color = {0.5, 0.5, 0.5},

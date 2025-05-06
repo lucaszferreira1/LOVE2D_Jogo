@@ -8,6 +8,7 @@ function Grid:new(width, height, itemsIn, itemsOut)
     instance.height = height
     instance.itemsIn = itemsIn or {}
     instance.itemsOut = itemsOut or {}
+    instance.functionBlocks = {}
     instance.cells = {}
     for x = 1, width do
         instance.cells[x] = table.create and table.create(height, nil) or {}
@@ -19,11 +20,11 @@ function Grid:new(width, height, itemsIn, itemsOut)
     return instance
 end
 
-function Level:addItemIn(item, position, quantity)
+function Grid:addItemIn(item, position, quantity)
     table.insert(self.itemsIn, {item = item, position = position, quantity = quantity})
 end
 
-function Level:addItemOut(item, position, quantityRequired)
+function Grid:addItemOut(item, position, quantityRequired)
     table.insert(self.itemsOut, {item = item, position = position, quantityRequired = quantityRequired})
 end
 
@@ -77,6 +78,20 @@ function Grid:getPlaceable(x, y)
     else
         error("Invalid cell coordinates")
     end
+end
+
+function Grid:addFunctionBlock(functionBlock)
+    table.insert(self.functionBlocks, functionBlock)
+end
+
+function Grid:removeFunctionBlock(functionBlock)
+    for i, block in ipairs(self.functionBlocks) do
+        if block == functionBlock then
+            table.remove(self.functionBlocks, i)
+            return
+        end
+    end
+    error("Function block not found")
 end
 
 return Grid

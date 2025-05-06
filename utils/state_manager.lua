@@ -14,10 +14,10 @@ function StateManager:switchToLevel(newState, levelId)
     if self.current.enter then self.current:enter(levelId) end
 end
 
-function StateManager:switchToElectrical(newState, levelId, leve_data, grid)
+function StateManager:switchElectrical(newState, levelId, level_data, grid)
     if self.current and self.current.exit then self.current:exit() end
     self.current = newState
-    if self.current.enter then self.current:enter(levelId, leve_data, grid) end
+    if self.current.enter then self.current:enter(levelId, level_data, grid) end
 end
 
 function StateManager:update(dt)

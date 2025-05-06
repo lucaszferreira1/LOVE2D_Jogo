@@ -2,7 +2,7 @@
 local Placeable = {}
 Placeable.__index = Placeable
 
-function Placeable:new(id, name, category, description, x, y, direction, width, height, iconPath, sprite, scale)
+function Placeable:new(id, name, category, description, x, y, direction, width, height, fb, iconPath, sprite, scale)
     local instance = setmetatable({}, Placeable)
     instance.id = id or 0
     instance.name = name or "Unknown Placeable"
@@ -13,6 +13,7 @@ function Placeable:new(id, name, category, description, x, y, direction, width, 
     instance.direction = direction or "none"
     instance.width = width or 1
     instance.height = height or 1
+    instance.functionBlock = fb or nil
     instance.icon = love.graphics.newImage(iconPath or "default_icon.png")
     instance.sprite = love.graphics.newImage(sprite or "default_placeable.png")
     instance.scale = scale or 1
